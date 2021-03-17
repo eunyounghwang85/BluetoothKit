@@ -111,10 +111,31 @@ internal class BKScanner: BKCBCentralManagerDiscoveryDelegate {
         guard busy else {
             return
         }
+        
+        /*
+        var name = peripheral.name
+        if name == nil {
+            name = peripheral.identifier.uuidString
+        }
+        
+        print("-- Peripheral discovered")
+        print("-- Peripheral name - status : " + (name ?? "x") + " - " + getState(peripheral.state))
+        print("-- Peripheral uuid: " + peripheral.identifier.uuidString)
+        print("-- Peripheral adv : " + String(describing: advertisementData))*/
+        
+        let acceptNames = configuration.advertisementNAMES
+        //getname(advertisementData).contains("B0001")
+        let peripheralname = getname(advertisementData)
+        
+        guard acceptNames.count  < 1 ||  (acceptNames.contains(where: {peripheralname.contains($0)})) else {
+            return
+        }
+        
         let RSSI = Int(truncating: RSSI)
         let remotePeripheral = BKRemotePeripheral(identifier: peripheral.identifier, peripheral: peripheral)
         remotePeripheral.configuration = configuration
         let discovery = BKDiscovery(advertisementData: advertisementData, remotePeripheral: remotePeripheral, RSSI: RSSI)
+        
         if let index = discoveries.firstIndex(of: discovery) {
             discoveries[index] = discovery
         } else {
@@ -122,5 +143,33 @@ internal class BKScanner: BKCBCentralManagerDiscoveryDelegate {
         }
         scanHandlers?.progressHandler?([ discovery ])
     }
+    
+    func getState(_ state: CBPeripheralState) -> String {
+        if state == .connected {
+            return "connected"
+        }
+        if state == .connecting {
+            return "connecting"
+        }
+        if state == .disconnected {
+            return "disconnected"
+        }
+        if state == .disconnecting {
+            return "disconnecting"
+        }
+        return ""
+    }
+    
+    func getname(_ advertisementData: [String: Any]) -> String {
+        
+        guard  let name =  advertisementData[CBAdvertisementDataLocalNameKey] as? String else {
+            return ""
+        }
+      
+        return name
+    }
+    
+
+    
 
 }

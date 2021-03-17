@@ -43,6 +43,11 @@ internal struct Logger {
     // MARK: Functions
 
     internal static func log(_ string: String) {
+        
+        guard string.contains("!!hey") else {
+            return
+        }
+        
         let date = Date()
         let stringWithDate = "[\(loggingDateFormatter.string(from: date))] \(string)"
         print(stringWithDate, terminator: "")

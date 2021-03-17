@@ -125,11 +125,18 @@ public class BKRemotePeripheral: BKRemotePeer, BKCBPeripheralDelegate {
     }
 
     internal func discoverServices() {
+        
+        peripheral?.delegate = peripheralDelegateProxy
+        
         if peripheral?.services != nil {
             peripheral(peripheral!, didDiscoverServices: nil)
             return
         }
-        peripheral?.discoverServices(configuration!.serviceUUIDs)
+      // peripheral?.discoverServices(configuration!.serviceUUIDs)
+        // 서비스 아이디를 넣어 해당 서비스를 등록해줘야 하는데... 계속 discoverServices 가 등록이 안되어 읽히지 않는 문제가 발생한다!
+        // 원이 파악이 아직 안됌
+        peripheral?.discoverServices([ configuration!.dataServiceReadCharacteristicUUID ])
+       // peripheral?.discoverServices(configuration!.serviceUUIDs)
     }
 
     internal func unsubscribe() {
@@ -160,13 +167,17 @@ public class BKRemotePeripheral: BKRemotePeer, BKCBPeripheralDelegate {
             if service.characteristics != nil {
                 self.peripheral(peripheral, didDiscoverCharacteristicsFor: service, error: nil)
             } else {
+    
+                // peripheral.discoverCharacteristics(nil, for: service)
                 peripheral.discoverCharacteristics(configuration!.characteristicUUIDsForServiceUUID(service.uuid), for: service)
+               
             }
+        
         }
     }
 
     internal func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        guard service.uuid == configuration!.dataServiceUUID, let dataCharacteristic = service.characteristics?.filter({ $0.uuid == configuration!.dataServiceCharacteristicUUID }).last else {
+        guard service.uuid == configuration!.dataServiceReadCharacteristicUUID, let dataCharacteristic = service.characteristics?.filter({ $0.uuid == configuration!.dataServiceCharacteristicUUID }).last else {
             return
         }
         characteristicData = dataCharacteristic

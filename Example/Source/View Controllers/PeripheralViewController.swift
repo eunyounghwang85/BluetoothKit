@@ -71,8 +71,8 @@ internal class PeripheralViewController: UIViewController, AvailabilityViewContr
         do {
             peripheral.delegate = self
             peripheral.addAvailabilityObserver(self)
-            let dataServiceUUID = UUID(uuidString: "6E6B5C64-FAF7-40AE-9C21-D4933AF45B23")!
-            let dataServiceCharacteristicUUID = UUID(uuidString: "477A2967-1FAB-4DC5-920A-DEE5DE685A3D")!
+            let dataServiceUUID = UUID(uuidString: "0000F1AB-0000-1000-8000-00805F9B34FB")!
+            let dataServiceCharacteristicUUID = UUID(uuidString: "ED2B4E3B-2820-492F-9507-DF165285E831")!
             let localName = Bundle.main.infoDictionary!["CFBundleName"] as? String
             let configuration = BKPeripheralConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, localName: localName)
             try peripheral.startWithConfiguration(configuration)
@@ -89,8 +89,12 @@ internal class PeripheralViewController: UIViewController, AvailabilityViewContr
     // MARK: Target Actions
 
     @objc private func sendData() {
-        let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
-        let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
+        //let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
+       // let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
+        
+        let numberOfBytesToSend : [UInt8] = [0x02, 0x30, 0x31, 0x43, 0x0D]
+        let data = Data(numberOfBytesToSend)
+        
         Logger.log("Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
         for remoteCentral in peripheral.connectedRemoteCentrals {
             Logger.log("Sending to \(remoteCentral)")

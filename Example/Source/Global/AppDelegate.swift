@@ -33,9 +33,11 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
     internal func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
         if let keyWindow = window {
-          //  let navigationController = UINavigationController(rootViewController: RoleSelectionViewController())
-            let rootvc =  DoorViewController()
-            keyWindow.rootViewController = rootvc
+            let navigationController = UINavigationController(rootViewController: RoleSelectionViewController())
+        
+          //  let navigationController = UINavigationController(rootViewController: DoorViewController())
+         
+            keyWindow.rootViewController = navigationController
             keyWindow.makeKeyAndVisible()
         }
         return true

@@ -44,6 +44,7 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
     private var discoveries = [BKDiscovery]()
     private let discoveriesTableViewCellIdentifier = "Discoveries Table View Cell Identifier"
     private let central = BKCentral()
+    var deviceReady : Bool = false
 
     // MARK: UIViewController Life Cycle
 
@@ -87,9 +88,9 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
         do {
             central.delegate = self
             central.addAvailabilityObserver(self)
-            let dataServiceUUID = UUID(uuidString: "6E6B5C64-FAF7-40AE-9C21-D4933AF45B23")!
-            let dataServiceCharacteristicUUID = UUID(uuidString: "477A2967-1FAB-4DC5-920A-DEE5DE685A3D")!
-            let configuration = BKConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID)
+            let dataServiceUUID = UUID(uuidString: "0000F1AB-0000-1000-8000-00805F9B34FB")!
+            let dataServiceCharacteristicUUID = UUID(uuidString: "ED2B4E3B-2820-492F-9507-DF165285E831")!
+            let configuration = BKConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, UUID(uuidString: "ED2B4E3A-2820-492F-9507-DF165285E831")!, ["B0001"])
             try central.startWithConfiguration(configuration)
         } catch let error {
             print("Error while starting: \(error)")
@@ -98,18 +99,66 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
 
     private func scan() {
         central.scanContinuouslyWithChangeHandler({ changes, discoveries in
-            let indexPathsToRemove = changes.filter({ $0 == .remove(discovery: nil) }).map({ IndexPath(row: self.discoveries.firstIndex(of: $0.discovery)!, section: 0) })
-            self.discoveries = discoveries
-            let indexPathsToInsert = changes.filter({ $0 == .insert(discovery: nil) }).map({ IndexPath(row: self.discoveries.firstIndex(of: $0.discovery)!, section: 0) })
+            var oldcoves =  self.discoveries
+            let checkdisco : [BKDiscovery] = changes
+                .filter({ $0 == .remove(discovery: nil) })
+                .compactMap({ guard  oldcoves.contains($0.discovery) else { return nil}
+                                return $0.discovery })
+            let indexPathsToRemove : [IndexPath] = checkdisco.compactMap({ guard let _row = oldcoves.firstIndex(of: $0) else { return nil}
+                                return IndexPath(row:_row, section: 0) })
+                                                    
+            oldcoves.removeAll(where: {checkdisco.contains($0)})
+            self.discoveries = oldcoves
+            // 다시입히고. 지우고 다시넣기
             if !indexPathsToRemove.isEmpty {
                 self.discoveriesTableView.deleteRows(at: indexPathsToRemove, with: UITableView.RowAnimation.automatic)
             }
+            
+            oldcoves = discoveries
+            let indexPathsToInsert : [IndexPath] = changes
+                .filter({ $0 == .insert(discovery: nil) })
+                .compactMap({ guard let _row = oldcoves.firstIndex(of: $0.discovery)
+                            else { return nil}
+                                return IndexPath(row:_row, section: 0) })
+            // 순서 주의
+            self.discoveries = oldcoves
             if !indexPathsToInsert.isEmpty {
                 self.discoveriesTableView.insertRows(at: indexPathsToInsert, with: UITableView.RowAnimation.automatic)
             }
-            for insertedDiscovery in changes.filter({ $0 == .insert(discovery: nil) }) {
-                Logger.log("Discovery: \(insertedDiscovery)")
+            
+            guard !self.deviceReady else {return}
+            
+            var Checkperipheral : [String : [String]] = [String : [String]]()
+            let allcoveries = self.discoveries
+            var connectDeviceIndex : Int? = nil
+            
+            for discovery  in allcoveries {
+                var name =  discovery.localName ?? "-1"
+                name = name.replacingOccurrences(of: "B0001_", with: "")
+                
+                // 현재 키 구분
+                let tname =  name
+                
+                name = name.replacingOccurrences(of: "M", with: "")
+                name = name.replacingOccurrences(of: "S", with: "")
+                var distanceArray = Checkperipheral[name] ?? [String]()
+                if !distanceArray.contains(tname){
+                    distanceArray.append(tname)
+                }
+                Checkperipheral[name] = distanceArray
+                if distanceArray.count > 1, let discover =  allcoveries.enumerated().filter({$0.element.localName == "B0001_" + name + "M" }).first {
+                    connectDeviceIndex = discover.offset
+                    break
+                }
             }
+            
+            guard let index = connectDeviceIndex else {return}
+            let path = IndexPath(row: index, section: 0)
+            self.discoveriesTableView.selectRow(at:path, animated: true, scrollPosition: .none)
+            self.gotoConnet(path)
+         /*   for insertedDiscovery in changes.filter({ $0 == .insert(discovery: nil) }) {
+                Logger.log("Discovery: \(insertedDiscovery)")
+            }*/
         }, stateHandler: { newState in
             if newState == .scanning {
                 self.activityIndicator?.startAnimating()
@@ -124,6 +173,29 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
         })
     }
 
+    func  gotoConnet(_ indexPath:IndexPath){
+        guard !self.deviceReady else {
+            return  self.discoveriesTableView.deselectRow(at: indexPath, animated: true)
+        }
+        self.deviceReady = true
+        self.discoveriesTableView.isUserInteractionEnabled = false
+        central.connect(remotePeripheral: discoveries[indexPath.row].remotePeripheral) { remotePeripheral, error in
+            self.discoveriesTableView.isUserInteractionEnabled = true
+            guard error == nil else {
+                self.deviceReady = false
+                print("Error connecting peripheral: \(String(describing: error))")
+                self.discoveriesTableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
+            
+            let remotePeripheralViewController = RemotePeripheralViewController(central: self.central, remotePeripheral: remotePeripheral)
+            remotePeripheralViewController.delegate = self
+            self.central.interruptScan()
+           
+            self.navigationController?.pushViewController(remotePeripheralViewController, animated: true)
+        }
+        
+    }
     // MARK: UITableViewDataSource
 
     internal func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -140,18 +212,8 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
     // MARK: UITableViewDelegate
 
     internal func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.isUserInteractionEnabled = false
-        central.connect(remotePeripheral: discoveries[indexPath.row].remotePeripheral) { remotePeripheral, error in
-            tableView.isUserInteractionEnabled = true
-            guard error == nil else {
-                print("Error connecting peripheral: \(String(describing: error))")
-                tableView.deselectRow(at: indexPath, animated: true)
-                return
-            }
-            let remotePeripheralViewController = RemotePeripheralViewController(central: self.central, remotePeripheral: remotePeripheral)
-            remotePeripheralViewController.delegate = self
-            self.navigationController?.pushViewController(remotePeripheralViewController, animated: true)
-        }
+        
+        self.gotoConnet(indexPath)
     }
 
     // MARK: BKAvailabilityObserver
@@ -168,6 +230,8 @@ internal class CentralViewController: UIViewController, UITableViewDataSource, U
     // MARK: BKCentralDelegate
 
     internal func central(_ central: BKCentral, remotePeripheralDidDisconnect remotePeripheral: BKRemotePeripheral) {
+        
+        self.deviceReady = false
         Logger.log("Remote peripheral did disconnect: \(remotePeripheral)")
         _ = self.navigationController?.popToViewController(self, animated: true)
     }

@@ -49,6 +49,7 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
         super.init(nibName: nil, bundle: nil)
         remotePeripheral.delegate = self
         remotePeripheral.peripheralDelegate = self
+       
     }
 
     internal required init?(coder aDecoder: NSCoder) {
@@ -96,15 +97,23 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
 
     internal func remotePeripheralIsReady(_ remotePeripheral: BKRemotePeripheral) {
         Logger.log("Peripheral ready: \(remotePeripheral)")
+        self.sendData()
     }
 
     // MARK: Target Actions
 
-    @objc private func sendData() {
-        let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
-        let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
-        Logger.log("Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
+    @objc public func sendData() {
+       // let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
+       // let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
+        
+        let numberOfBytesToSend : [UInt8] = [0x02, 0x30, 0x31, 0x43, 0x0D]
+        let pos = numberOfBytesToSend.count
+        let data =  Data(bytes: numberOfBytesToSend, count: pos)
+        
+    
+        Logger.log("!!!hey : Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
         Logger.log("Sending to \(remotePeripheral)")
+    
         central.sendData(data, toRemotePeer: remotePeripheral) { data, remotePeripheral, error in
             guard error == nil else {
                 Logger.log("Failed sending to \(remotePeripheral)")
@@ -123,5 +132,9 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
             logTextView.text = string
         }
         logTextView.scrollRangeToVisible(NSRange(location: logTextView.text.count - 1, length: 1))
+    }
+    
+    internal func tbyteArray<T>(from value: T) -> [UInt8] where T: FixedWidthInteger {
+        withUnsafeBytes(of: value.bigEndian, Array.init)
     }
 }

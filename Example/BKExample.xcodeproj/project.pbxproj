@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		26725E1025F5FC7A00389C77 /* SnapKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 670DAC5D23FFB137008B81A4 /* SnapKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		26725E1125F5FC8300389C77 /* CryptoSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 670DAC7B23FFB152008B81A4 /* CryptoSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		26D6FAE525FEE1650053055E /* DoorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D6FAE425FEE1650053055E /* DoorViewController.swift */; };
+		26D6FAF925FF4B550053055E /* DoorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D6FAE425FEE1650053055E /* DoorViewController.swift */; };
 		2DB03F011D427F0900E735CE /* BluetoothKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C669828C1CEB9FA100E23B57 /* BluetoothKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C668889C1B970123003C8DBB /* NSData+NumberOfBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C668888D1B970123003C8DBB /* NSData+NumberOfBytes.swift */; };
 		C668889D1B970123003C8DBB /* UIImage+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = C668888E1B970123003C8DBB /* UIImage+Color.swift */; };
@@ -571,7 +571,7 @@
 			files = (
 				C66888A11B970123003C8DBB /* AvailabilityViewController.swift in Sources */,
 				C66888A01B970123003C8DBB /* Logger.swift in Sources */,
-				26D6FAE525FEE1650053055E /* DoorViewController.swift in Sources */,
+				26D6FAF925FF4B550053055E /* DoorViewController.swift in Sources */,
 				C66888A61B970123003C8DBB /* AvailabilityView.swift in Sources */,
 				C668889E1B970123003C8DBB /* AppDelegate.swift in Sources */,
 				C66888A21B970123003C8DBB /* CentralViewController.swift in Sources */,
