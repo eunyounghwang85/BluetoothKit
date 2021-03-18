@@ -69,7 +69,7 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
         #endif
         logTextView.alwaysBounceVertical = true
         applyConstraints()
-        Logger.log("Awaiting data from peripheral")
+        Logger.heylog("Awaiting data from peripheral")
     }
 
     internal override func viewWillDisappear(_ animated: Bool) {
@@ -88,15 +88,15 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
 
     internal func remotePeripheral(_ remotePeripheral: BKRemotePeripheral, didUpdateName name: String) {
         navigationItem.title = name
-        Logger.log("Name change: \(name)")
+        Logger.heylog("Name change: \(name)")
     }
 
     internal func remotePeer(_ remotePeer: BKRemotePeer, didSendArbitraryData data: Data) {
-        Logger.log("Received data of length: \(data.count) with hash: \(data.md5().toHexString())")
+        Logger.heylog("Received data of length: \(data.count) with hash: \(data.md5().toHexString())")
     }
 
     internal func remotePeripheralIsReady(_ remotePeripheral: BKRemotePeripheral) {
-        Logger.log("Peripheral ready: \(remotePeripheral)")
+        Logger.heylog("Peripheral ready: \(remotePeripheral)")
         self.sendData()
     }
 
@@ -111,15 +111,15 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
         let data =  Data(bytes: numberOfBytesToSend, count: pos)
         
     
-        Logger.log("!!!hey : Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
-        Logger.log("Sending to \(remotePeripheral)")
+        Logger.heylog("!!!hey : Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
+        Logger.heylog("Sending to \(remotePeripheral)")
     
         central.sendData(data, toRemotePeer: remotePeripheral) { data, remotePeripheral, error in
             guard error == nil else {
-                Logger.log("Failed sending to \(remotePeripheral)")
+                Logger.heylog("Failed sending to \(remotePeripheral)")
                 return
             }
-            Logger.log("Sent to \(remotePeripheral)")
+            Logger.heylog("Sent to \(remotePeripheral)")
         }
     }
 

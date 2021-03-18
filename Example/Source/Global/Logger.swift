@@ -53,5 +53,14 @@ internal struct Logger {
         print(stringWithDate, terminator: "")
         Logger.delegate?.loggerDidLogString(stringWithDate)
     }
+    
+    internal static func heylog(_ string: String) {
+    
+        
+        let date = Date()
+        let stringWithDate = "[\(loggingDateFormatter.string(from: date))] \(string)"
+        print(stringWithDate, terminator: "")
+        Logger.delegate?.loggerDidLogString(stringWithDate)
+    }
 
 }

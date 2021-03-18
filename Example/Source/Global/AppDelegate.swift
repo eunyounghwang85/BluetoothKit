@@ -29,18 +29,76 @@ import BluetoothKit
 internal class AppDelegate: UIResponder, UIApplicationDelegate {
 
     internal var window: UIWindow?
-
+    let singleton = Singleton.sharedInstance()
+    
     internal func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
-        if let keyWindow = window {
-            let navigationController = UINavigationController(rootViewController: RoleSelectionViewController())
-        
-          //  let navigationController = UINavigationController(rootViewController: DoorViewController())
-         
-            keyWindow.rootViewController = navigationController
-            keyWindow.makeKeyAndVisible()
+        guard  let keyWindow = window else {
+            return true
         }
+       
+        Logger.heylog("application didFinishLaunchingWithOptions")
+        singleton.appRestored = false
+        singleton.centralManagerToRestore = ""
+        
+        
+        if let peripheralManagerIdentifiers: [String] = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothCentrals] as? [String]{
+            if peripheralManagerIdentifiers.count > 1 {
+                // TODO : manage this case
+            }
+            if peripheralManagerIdentifiers.count == 1 {
+                // only one central Manager to initialize again
+                let identifier = peripheralManagerIdentifiers.first
+                    
+                Logger.heylog("UIApplicationLaunchOptionsKey.bluetoothCentrals] : ")
+                Logger.heylog("App was closed by system. will restore the central manager ")
+                Logger.heylog("--> " + identifier!)
+
+                // flag allowing to know that we need to restore the central manager
+                singleton.appRestored = true
+                // name of central manager to restore
+                singleton.centralManagerToRestore = identifier!
+            
+            }
+        }
+        
+        // let navigationController = UINavigationController(rootViewController: RoleSelectionViewController())
+     
+        let navigationController = UINavigationController(rootViewController: singleton.doorVcontroller)
+      
+         keyWindow.rootViewController = navigationController
+         keyWindow.makeKeyAndVisible()
+        
+        
         return true
     }
+    
+    func applicationWillResignActive(_ application: UIApplication) {
+        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+        Logger.heylog("applicationWillResignActive")
+    }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        Logger.heylog("applicationDidEnterBackground")
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        Logger.heylog("applicationWillEnterForeground")
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        Logger.heylog("applicationDidBecomeActive")
+    }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        Logger.heylog("applicationWillTerminate")
+    }
+    
 
 }
