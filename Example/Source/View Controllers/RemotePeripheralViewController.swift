@@ -85,7 +85,6 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
     }
 
     // MARK: BKRemotePeripheralDelegate
-
     internal func remotePeripheral(_ remotePeripheral: BKRemotePeripheral, didUpdateName name: String) {
         navigationItem.title = name
         Logger.heylog("Name change: \(name)")
@@ -103,24 +102,7 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
     // MARK: Target Actions
 
     @objc public func sendData() {
-       // let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
-       // let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
-        
-        let numberOfBytesToSend : [UInt8] = [0x02, 0x30, 0x31, 0x43, 0x0D]
-        let pos = numberOfBytesToSend.count
-        let data =  Data(bytes: numberOfBytesToSend, count: pos)
-        
-    
-        Logger.heylog("!!!hey : Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
-        Logger.heylog("Sending to \(remotePeripheral)")
-    
-        central.sendData(data, toRemotePeer: remotePeripheral) { data, remotePeripheral, error in
-            guard error == nil else {
-                Logger.heylog("Failed sending to \(remotePeripheral)")
-                return
-            }
-            Logger.heylog("Sent to \(remotePeripheral)")
-        }
+        Singleton.sharedInstance.sendData(self.remotePeripheral)
     }
 
     // MARK: LoggerDelegate
@@ -134,7 +116,4 @@ internal class RemotePeripheralViewController: UIViewController, BKRemotePeriphe
         logTextView.scrollRangeToVisible(NSRange(location: logTextView.text.count - 1, length: 1))
     }
     
-    internal func tbyteArray<T>(from value: T) -> [UInt8] where T: FixedWidthInteger {
-        withUnsafeBytes(of: value.bigEndian, Array.init)
-    }
 }
